@@ -1,5 +1,5 @@
+mod config;
 mod godot_objects;
-
 use godot::prelude::*;
 
 struct MyExtension;

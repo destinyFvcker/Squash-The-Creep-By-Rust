@@ -69,14 +69,15 @@ environment = SubResource("Environment_0tcge")
 [node name="Player" parent="." instance=ExtResource("2")]
 
 [node name="CameraPivot" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.35292, 0.935654, 0, -0.935654, 0.35292, 0.183514, 4.56698, 0.561506)
+transform = Transform3D(1, 0, 0, 0, 0.61518, 0.788387, 0, -0.788387, 0.61518, 0.183514, 4.56698, 0.561506)
 
 [node name="Camera" type="Camera3D" parent="CameraPivot"]
 transform = Transform3D(1, 0, 0, 0, 0.999958, -0.00918031, 0, 0.00918031, 0.999958, 0, 0.289957, 18.71)
 projection = 1
 fov = 48.6
-size = 34.0
-far = 31.29
+size = 45.761
+near = 0.092
+far = 45.23
 
 [node name="Cylinders" type="Node3D" parent="."]
 
