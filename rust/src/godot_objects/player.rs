@@ -1,3 +1,5 @@
+//! Player entity in 《squash the creep》
+//! implement CharacterBody3D
 use std::f32::consts::PI;
 
 use crate::config;
@@ -112,9 +114,6 @@ impl ICharacterBody3D for Player {
 
 #[godot_api]
 impl Player {
-    #[signal]
-    fn hit();
-
     #[func]
     fn die(&mut self) {
         self.base_mut().emit_signal("hit".into(), &[]);
