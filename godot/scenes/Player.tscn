@@ -1,5 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://dp478jyugrn7o"]
+[gd_scene load_steps=8 format=3 uid="uid://dp478jyugrn7o"]
 
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_56yhu"]
 [ext_resource type="PackedScene" uid="uid://d0ypm0v45pwdv" path="res://art/player.glb" id="2"]
 
 [sub_resource type="SphereShape3D" id="1"]
@@ -48,6 +49,7 @@ _data = {
 
 [node name="Player" type="Player"]
 collision_mask = 2147483654
+script = ExtResource("1_56yhu")
 
 [node name="Pivot" type="Node3D" parent="."]
 

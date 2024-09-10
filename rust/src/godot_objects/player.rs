@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use crate::config;
 use godot::classes::AnimationPlayer;
 use godot::classes::CharacterBody3D;
@@ -34,8 +36,11 @@ impl ICharacterBody3D for Player {
 
     fn physics_process(&mut self, delta: f64) {
         let mut direction = Vector3::ZERO;
-
         let input_ref = Input::singleton();
+        let mut ap_ref: Gd<AnimationPlayer> =
+            self.base().get_node_as(NodePath::from("AnimationPlayer"));
+        let mut velocity = self.base().get_velocity();
+
         if Input::is_action_pressed(&input_ref, StringName::from("move_right")) {
             direction.x += config::NORMAL_SPEED_PER_FRAME;
         }
@@ -49,8 +54,6 @@ impl ICharacterBody3D for Player {
             direction.z += config::NORMAL_SPEED_PER_FRAME;
         }
 
-        let mut ap_ref: Gd<AnimationPlayer> =
-            self.base().get_node_as(NodePath::from("AnimationPlayer"));
         if direction != Vector3::ZERO {
             // In the lines below, we turn the character when moving and make the animation play faster.
             direction = direction.normalized();
@@ -58,12 +61,17 @@ impl ICharacterBody3D for Player {
             self.base_mut()
                 .set_basis(Basis::new_looking_at(direction, Vector3::UP, false));
 
-            ap_ref.set_speed_scale(6.0);
+            // The animation will be very weird when the character jumping up
+            // if you open animation
+            if !self.base().is_on_floor() {
+                ap_ref.set_speed_scale(0.01)
+            } else {
+                ap_ref.set_speed_scale(6.0);
+            }
         } else {
             ap_ref.set_speed_scale(1.5);
         }
 
-        let mut velocity = self.base().get_velocity();
         velocity.x = direction.x * self.speed;
         velocity.z = direction.z * self.speed;
 
@@ -76,20 +84,29 @@ impl ICharacterBody3D for Player {
         velocity.y -= self.fall_acceleration * delta as f32;
 
         for index in 0..self.base().get_slide_collision_count() {
-            let collision = self.base_mut().get_slide_collision(index).unwrap();
-            let mob = collision.get_collider().unwrap();
-            let mut mob = mob.cast::<Node>();
-            if Node::is_in_group(&mob, StringName::from("mob")) {
-                if Vector3::UP.dot(collision.get_normal()) > 1.0f32.to_radians() {
-                    mob.call(StringName::from("squash"), &[]);
-                    velocity.y = self.bounce_impulse;
-                    break;
+            let collision = self.base_mut().get_slide_collision(index);
+            // Actually I don't know why even we delect a slice collision, but the result of get() is still None!
+            if let Some(collision) = collision {
+                let mob = collision.get_collider();
+                if let Some(mob) = mob {
+                    let mut mob = mob.cast::<Node>();
+                    if Node::is_in_group(&mob, StringName::from("mob")) {
+                        if Vector3::UP.dot(collision.get_normal()) > 1.0f32.to_radians() {
+                            mob.call(StringName::from("squash"), &[]);
+                            velocity.y = self.bounce_impulse;
+                            break;
+                        }
+                    }
                 }
             }
         }
 
+        let mut rotation = self.base().get_rotation();
+        rotation.x = PI / 6f32 * velocity.y / self.jump_impulse;
+
         self.base_mut().set_velocity(velocity);
         self.base_mut().move_and_slide();
+        self.base_mut().set_rotation(rotation);
     }
 }
 
@@ -97,6 +114,12 @@ impl ICharacterBody3D for Player {
 impl Player {
     #[signal]
     fn hit();
+
+    #[func]
+    fn die(&mut self) {
+        self.base_mut().emit_signal("hit".into(), &[]);
+        self.base_mut().queue_free();
+    }
 }
 
 impl Player {}

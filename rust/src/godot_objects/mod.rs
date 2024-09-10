@@ -1,1 +1,2 @@
+mod mob;
 mod player;
